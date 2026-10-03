@@ -78,7 +78,7 @@ Kimenet: `public/assets/eduard-head.png`, `eduard-head-128.png`, `favicon.png`, 
 
 Build: `npm install`, start: `npm start`. Env: `NODE_VERSION=20`, `SCORE_RATE_LIMIT_PER_MIN=5`. **`DATABASE_URL` nincs beállítva → memória-tároló.**
 
-Új deploy: elég pusholni a `main`-re (auto-deploy). Kézi újradeploy: Render MCP `trigger_deploy` vagy Dashboard → Manual Deploy.
+**Új deploy:** az auto-deploy be van kapcsolva, de **pushra NEM indul el** (a Render GitHub App-nek nincs hozzáférése a repóhoz – a build log: „It looks like we don't have access to your repo”; a publikus repót így is klónozza, de webhook nincs). Ezért push után: Render MCP `trigger_deploy` (`serviceId: srv-db0asre0tbcc73f1udf0`) vagy Dashboard → Manual Deploy. Tartós javítás: GitHub → Settings → Applications → Render → Repository access → `zsirafmix/komanovics` hozzáadása (KNOWN_ISSUES KI-12).
 
 ### Postgres bekötése később (ha felszabadul az ingyenes slot vagy fizetős DB-t engedélyez a tulajdonos)
 1. Render MCP `create_postgres` (`name: komanovics-db`, `plan: free`, `region: frankfurt`) vagy Dashboard → New → Postgres.

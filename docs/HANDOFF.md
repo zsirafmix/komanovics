@@ -40,6 +40,8 @@ Minden fájl új – lásd README „Repository-struktúra”.
 ## Important discoveries
 - Render workspace-enként **csak 1 aktív ingyenes Postgres** lehet.
 - A Render MCP `query_render_postgres` csak olvasó tranzakcióban fut → SQL-lel törölni nem lehet vele.
+- Pushra nem indul auto-deploy (nincs Render GitHub App hozzáférés) → kézi `trigger_deploy` kell (KI-12).
+- A dokumentációs commit utáni kézi újradeploy kiürítette a memória-toplistát, így a „Teszt” próbabejegyzés törlődött (ellenőrizve `GET /api/scores`-szal).
 - A Render MCP `create_web_service` nem kezel `healthCheckPath`-ot; a `render.yaml`-ban benne van, a futó szolgáltatáson nincs beállítva.
 
 ## Failed attempts

@@ -9,10 +9,11 @@
 | KI-5 | Alacsony | rate limit | Memóriabeli, egy példányra érvényes, újraindításkor nullázódik |
 | KI-6 | Közepes | kliens | Valódi telefonon (iOS/Android) még nincs kézzel tesztelve |
 | KI-7 | Alacsony | grafika | A fej szemből néz, a test hátulnézetből látszik (szándékos rajzfilmes kompromisszum) |
-| KI-8 | Alacsony | élő adat | A „Teszt” (42 pont) próbabejegyzés az élő memória-toplistán van, a következő újraindításig |
+| KI-8 | Alacsony | élő adat | A „Teszt” (42 pont) élő próbabejegyzés memóriában volt; a dokumentációs commit utáni kézi újradeploy törölte (ellenőrizve, lásd HANDOFF) |
 | KI-9 | Alacsony | infrastruktúra | A `render.yaml` nincs Blueprintként szinkronizálva; a futó szolgáltatás MCP-vel készült |
 | KI-10 | Alacsony | grafika | A fej-kivágás bal alsó/jobb szélén pár pixelnyi krémszínű pulóver-maradvány látszik |
 | KI-11 | Alacsony | build | `npm install` Renderen a dev függőséget (puppeteer-core, böngésző nélkül) is telepíti |
+| KI-12 | Közepes | Render deploy | Pushra nem indul auto-deploy (nincs Render GitHub App hozzáférés a repóhoz) – kézi `trigger_deploy` kell |
 
 ## KI-1 – Nincs Postgres, memóriabeli toplista
 - **Reprodukció:** `curl https://komanovics.onrender.com/healthz` → `"storage":"memory"`. Render MCP `create_postgres` (free) → `400 cannot have more than one active free tier database`.
@@ -42,3 +43,9 @@
 
 ## KI-10 – Kivágási maradvány
 - `tools/crop_head.py` ovális maszkja (`cx, cy, rx, ry = 292, 222, 192, 205`) kissé szűkíthető alul-oldalt, vagy a szaturáció küszöbe (0.30) emelhető.
+
+## KI-12 – Pushra nem indul deploy
+- **Reprodukció:** 2026-10-03 09:33 körül push (`da3bc6b`) → Render `list_events`/`list_deploys`: nincs új build.
+- **Ok:** a Render GitHub App nincs telepítve / nincs hozzáférése a `zsirafmix/komanovics` repóhoz, így nincs webhook. A publikus repót a Render hozzáférés nélkül is klónozza.
+- **Workaround:** push után Render MCP `trigger_deploy` (`srv-db0asre0tbcc73f1udf0`).
+- **Végleges megoldás (tulajdonos teheti meg):** GitHub → Settings → Applications → Installed GitHub Apps → Render → Configure → Repository access → `komanovics` hozzáadása.

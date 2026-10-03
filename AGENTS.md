@@ -13,7 +13,7 @@ sört gyűjt (több pont, de részegebb → imbolyog, késik a kormány), kerül
 Minden játékbeli szöveg magyar. Csak ingyenes Render erőforrások. Build-lépés nélküli frontend, Node 20 + express + pg backend.
 
 ## CURRENT STATUS
-- ✅ Teljes játék kész és élő: https://komanovics.onrender.com (Render `srv-db0asre0tbcc73f1udf0`, free, frankfurt, auto-deploy a `main`-ről).
+- ✅ Teljes játék kész és élő: https://komanovics.onrender.com (Render `srv-db0asre0tbcc73f1udf0`, free, frankfurt, branch `main`; pushra NEM deployol automatikusan – KI-12).
 - ✅ API (`/healthz`, `GET/POST /api/scores`) működik, validálással és rate limittel.
 - ⚠️ Toplista **memóriában** (nincs `DATABASE_URL`): a free Postgres nem jött létre (workspace-limit). Újraindításkor törlődik.
 - ⚠️ Valódi telefonon nem tesztelt (csak headless Chrome mobil-emulációban).
@@ -68,6 +68,7 @@ Lásd `docs/KNOWN_ISSUES.md`. Legfontosabb: KI-1 memóriabeli toplista; KI-2 ela
 - `app.set('trust proxy', 1)` – nélküle a rate limit mindenkit egy IP-ként kezelne Renderen.
 - CSP `script-src 'self'`: inline `<script>` nem fog futni – minden JS külön fájlban.
 - `window.__ETT` hook – a smoke teszt használja, ne töröld.
+- **Push után deployt kézzel kell indítani** (Render MCP `trigger_deploy`, `srv-db0asre0tbcc73f1udf0`) – az auto-deploy webhook nem működik (KI-12).
 - A háttér-csempe periodikus elemeinek periódusa osztója legyen `TILE_H`-nak (512), különben varrat látszik.
 - A karakter (Eduárd) és a forráskép a felhasználó tulajdona; a játék neve KOMÁNOVICS.
 
@@ -80,5 +81,5 @@ Részletek: `docs/TROUBLESHOOTING.md`.
 
 ## OPEN QUESTIONS
 - Melyik tartós DB-megoldást választja a tulajdonos (KI-1 opciók)?
-- Maradhat-e a „Teszt” (42) próbabejegyzés? (Memóriában van, a következő újraindításkor magától eltűnik.)
+- Megadja-e a tulajdonos a Render GitHub App hozzáférést a repóhoz (KI-12), hogy működjön az auto-deploy?
 - Kell-e licenc (jelenleg UNLICENSED, a karakter a tulajdonosé)?

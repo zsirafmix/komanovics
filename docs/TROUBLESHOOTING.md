@@ -43,7 +43,9 @@ Minden tapasztalt hiba, a kiváltó ok, a kipróbált (sikertelen is!) és a vé
 - **Ok:** a minta illeszkedett a futó shell-parancs saját sorára. **Megoldás:** előbb `ps aux | grep …`, majd PID alapján `kill`.
 
 ## T10 – Render build log: „It looks like we don't have access to your repo, but we'll try to clone it anyway.”
-- Publikus repónál ártalmatlan; a klónozás sikerült. Privát repóhoz a Render GitHub App hozzáférés kellene.
+- A klónozás sikerült (publikus repó), DE emiatt nincs webhook: **a pushok nem indítanak auto-deployt** (ellenőrizve: a `da3bc6b` push után nem jött build event).
+- **Kipróbált:** 45+ mp várakozás a push után – nem indult deploy.
+- **Végleges (most):** kézi `trigger_deploy` minden push után. Tartós: Render GitHub App hozzáférés a repóhoz (KNOWN_ISSUES KI-12).
 
 ## T11 – A Render skill fájl nem volt a megadott helyen
 - `/home/box/agent-data/plugins/render/plugins/render/skills/...` nem létezett; a tényleges hely: `/home/box/agent-data/plugins/cache/cursor-public/render/<hash>/skills/`.

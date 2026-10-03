@@ -23,4 +23,5 @@ Formátum: dátum (Europe/Budapest) – komponens – leírás – ok – érint
 - Élő API: `/healthz` 200 (`storage: memory`), `POST /api/scores` „Teszt” 42 → 201 rank 1, hibás pont → 400, ismeretlen végpont → 404.
 
 ### Ismert problémák
+- Pushra nem indul auto-deploy (KI-12) – a dokumentációs commitot kézi `trigger_deploy` élesítette (ez a memória-toplistát és benne a „Teszt” bejegyzést is törölte).
 - Nincs Postgres (free DB limit) → memóriabeli toplista (KI-1). Valódi eszközös teszt hiányzik (KI-6).
