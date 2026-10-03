@@ -25,7 +25,7 @@ Továbbra sincs adatbázis (KI-1) – a memóriabeli toplista újraindításkor 
 
 ## Tests performed / results
 - `npm test`: 9/9 zöld (új teszt: táblanév-alapértelmezés, `SCORES_TABLE` felülírás, veszélyes nevek elutasítása; healthz `table`).
-- Élő: deploy után `/healthz` ellenőrizve (lásd lent).
+- Élő: deploy `dep-db0bgq60tbcc73f4b910` (commit `412cbd1`) után `/healthz` → `{"ok":true,"game":"KOMÁNOVICS","storage":"memory","table":"komanovics_scores"}` (2026-10-03 10:12 CEST). A memóriabeli toplista a deploy miatt kiürült.
 
 ## Important discoveries
 Migráció nem kellett (DB sosem volt). A régi `scores` név túl általános lett volna egy közös adatbázisban.
