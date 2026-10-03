@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#3f7a2d" />
+  <meta name="description" content="KOMÁNOVICS – biciklizz Eduárddal a tanyasi földúton, gyűjtsd a sört, kerüld a kecskéket és a traktort!" />
+  <title>KOMÁNOVICS</title>
+  <link rel="icon" type="image/png" href="assets/favicon.png" />
+  <meta name="apple-mobile-web-app-title" content="KOMÁNOVICS" />
+  <link rel="apple-touch-icon" href="assets/eduard-head-128.png" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="app">
+    <canvas id="game" aria-label="Játéktér"></canvas>
+
+    <!-- HUD: pontszám, életek (szívek), részegség-mérő, sebességszint, szünet/némítás -->
+    <div id="hud" hidden>
+      <div class="hud-row">
+        <div class="hud-box hud-score">
+          <span class="lbl">Pont</span>
+          <span id="hud-score" class="val">0</span>
+          <span id="hud-mult" class="mult">×1.0</span>
+        </div>
+        <div id="hud-lives" class="hud-box hud-lives" aria-label="Életek"></div>
+        <div class="hud-box hud-level"><span id="hud-level" class="val">1.</span><span class="lbl">szint</span></div>
+      </div>
+      <div class="hud-row">
+        <div class="hud-box drunk">
+          <span class="lbl">Részegség</span>
+          <div class="bar"><div id="hud-drunk" class="fill"></div></div>
+        </div>
+        <div class="hud-btns">
+          <button id="btn-pause" class="icon-btn" aria-label="Szünet" title="Szünet (P / Esc)">
+            <svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+          </button>
+          <button class="icon-btn js-mute" aria-label="Hang ki/be" title="Hang ki/be (M)">
+            <svg class="ico-on" viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke-width="2" stroke-linecap="round"/></svg>
+            <svg class="ico-off" viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 9l6 6M22 9l-6 6" fill="none" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="banner" aria-live="polite"></div>
+    <div id="touch-hint" hidden>
+      <span>◀ Bal fél</span><span>Jobb fél ▶</span>
+    </div>
+
+    <!-- Kezdőképernyő -->
+    <section id="screen-start" class="screen">
+      <div class="card">
+        <h1 class="title">KOMÁNOVICS</h1>
+        <p class="sub">Eduárd biciklis kalandja a tanyasi földúton</p>
+        <img class="hero" src="assets/eduard-full.jpg" alt="Eduárd, a tanya hőse, sörrel a kezében" width="602" height="572" />
+        <button id="btn-start" class="btn big">Indulás!</button>
+        <div class="toggles">
+          <button class="btn small js-mute js-mute-label">Hang: BE</button>
+          <button class="btn small js-tilt">Döntés: KI</button>
+        </div>
+        <p id="best" class="best"></p>
+        <details class="help">
+          <summary>Hogyan kell játszani?</summary>
+          <ul>
+            <li><b>Kormányzás:</b> ← → nyilak vagy A / D. Telefonon: tartsd nyomva a képernyő bal vagy jobb felét (vagy kapcsold be a döntést).</li>
+            <li><b>Sör</b> (+10 pont × szorzó): minél részegebb Eduárd, annál több pont jár – de annál jobban imbolyog, és annál később reagál a kormány.</li>
+            <li><b>Kávé</b> sokat, <b>savanyúság</b> kicsit józanít.</li>
+            <li><b>Kecske</b> (álló, átfutó, rohamozó) és <b>traktor</b>: ütközés = egy élet oda. Az <b>árokba</b> se borulj bele!</li>
+            <li><b>Kátyú</b>: ugrat. <b>Pocsolya</b>: megcsúszol. <b>Tyúkcsapat</b>: szétrebben és lelassít.</li>
+            <li>30 másodpercenként gyorsul a tempó. Szünet: P / Esc. Némítás: M.</li>
+          </ul>
+        </details>
+        <h2>Toplista</h2>
+        <ol id="lb-start" class="lb"><li class="muted">Betöltés…</li></ol>
+      </div>
+    </section>
+
+    <!-- Szünet -->
+    <section id="screen-pause" class="screen" hidden>
+      <div class="card narrow">
+        <h1 class="title small">Szünet</h1>
+        <p class="sub">Eduárd megpihen egy kicsit az út szélén.</p>
+        <button id="btn-resume" class="btn big">Folytatás</button>
+        <div class="toggles">
+          <button class="btn small js-mute js-mute-label">Hang: BE</button>
+          <button class="btn small js-tilt">Döntés: KI</button>
+        </div>
+        <button id="btn-quit" class="btn small ghost">Kilépés a főmenübe</button>
+      </div>
+    </section>
+
+    <!-- Játék vége -->
+    <section id="screen-over" class="screen" hidden>
+      <div class="card">
+        <h1 class="title small">Vége a túrának!</h1>
+        <img class="head-small" src="assets/eduard-head-128.png" alt="" width="120" height="128" />
+        <p class="final">Pontszám: <b id="over-score">0</b></p>
+        <p id="over-stats" class="sub"></p>
+        <form id="form-score" autocomplete="off">
+          <label for="name" class="sr-only">Neved</label>
+          <input id="name" name="name" maxlength="16" placeholder="Írd be a neved" required />
+          <button type="submit" id="btn-submit" class="btn">Beküldés</button>
+        </form>
+        <p id="submit-msg" class="msg" aria-live="polite"></p>
+        <h2>Toplista</h2>
+        <ol id="lb-over" class="lb"></ol>
+        <div class="toggles">
+          <button id="btn-again" class="btn big">Újra!</button>
+          <button id="btn-menu" class="btn small ghost">Főmenü</button>
+        </div>
+      </div>
+    </section>
+
+    <noscript><p class="noscript">A játékhoz JavaScript szükséges.</p></noscript>
+  </div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+# Render Blueprint – KOMÁNOVICS
+# Egy Node.js web service (statikus játék + ranglista API) és egy ingyenes Render Postgres.
+# Séma: https://render.com/schema/render.yaml.json
+#
+# FIGYELEM: Render workspace-enként csak EGY aktív ingyenes Postgres lehet. 2026-10-03-án a
+# "My Workspace"-ben már volt egy (allyoutuber), ezért a komanovics-db létrehozása elutasításra került
+# ("cannot have more than one active free tier database"). A szolgáltatás ilyenkor memóriabeli
+# ranglistával fut. Részletek: docs/KNOWN_ISSUES.md (KI-1) és docs/HANDOFF.md.
+# A ténylegesen futó szolgáltatás az MCP-vel, közvetlenül (nem Blueprint-szinkronnal) lett létrehozva.
+
+databases:
+  - name: komanovics-db
+    plan: free # ingyenes: 30 nap után lejár (lásd KNOWN_ISSUES)
+    region: frankfurt
+    databaseName: komanovics
+    user: komanovics
+    postgresMajorVersion: "18"
+
+services:
+  - type: web
+    name: komanovics
+    runtime: node
+    plan: free # ingyenes: 15 perc tétlenség után elalszik, az első kérés ~30-60 mp
+    region: frankfurt
+    branch: main
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: SCORE_RATE_LIMIT_PER_MIN
+        value: "5"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: komanovics-db
+          property: connectionString # belső (internal) kapcsolati string, SSL nélkül

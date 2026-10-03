@@ -1,0 +1,25 @@
+{
+  "name": "komanovics",
+  "version": "1.0.0",
+  "description": "KOMÁNOVICS – Eduárd biciklis, böngészős biciklis vertikális scroller játék online ranglistával (Node.js + Express + PostgreSQL).",
+  "private": true,
+  "type": "module",
+  "main": "server/index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "test": "node --test test/",
+    "smoke": "node tools/smoke.mjs"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^25.12.0"
+  },
+  "license": "UNLICENSED"
+}
