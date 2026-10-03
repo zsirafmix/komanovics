@@ -7,7 +7,7 @@ hiányában memóriában (újraindításkor elvesznek).
 
 ```mermaid
 flowchart LR
-  subgraph Böngésző
+  subgraph BROWSER [Böngésző]
     HTML[index.html + style.css]
     MAIN[main.js<br/>méretezés, rAF ciklus, HUD, képernyők]
     GAME[game.js<br/>állapotgép, fizika, spawn, ütközés]
@@ -21,7 +21,7 @@ flowchart LR
     GAME --> INPUT
     MAIN --> API
   end
-  subgraph Render web service [Render web service: komanovics]
+  subgraph RENDER [Render web service: komanovics]
     EXP[server/app.js<br/>Express]
     VAL[validate.js]
     RL[rateLimit.js]

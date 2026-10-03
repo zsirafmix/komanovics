@@ -10,8 +10,9 @@ tyúkcsapatokat és a szembejövő traktort.
 - **Élő játék:** https://komanovics.onrender.com (Render, ingyenes csomag – az első betöltés ébredés miatt 30–60 mp is lehet)
 - **Repo:** https://github.com/zsirafmix/komanovics
 - **Minden játékbeli szöveg magyar.**
+- **Állapot (2026-10-03):** a játék élő és teljes; a toplista egyelőre **memóriában** fut (a Render ingyenes Postgres nem jött létre a workspace-limit miatt, lásd [KNOWN_ISSUES KI-1](docs/KNOWN_ISSUES.md)), ezért újraindításkor törlődik.
 
-![Kezdőképernyő](docs/img/start.png) ![Játék](docs/img/gameplay.png)
+![Kezdőképernyő](docs/img/start.jpg) ![Játék](docs/img/gameplay.jpg)
 
 ## Fő funkciók
 - Felülnézetes, lefelé görgetett tanyasi földút (kerítés, árok, fák, napraforgó, szénaboglya, tanyaház, gémeskút).
