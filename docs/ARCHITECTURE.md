@@ -23,12 +23,12 @@ flowchart LR
   end
   subgraph RENDER [Render web service: komanovics]
     EXP[server/app.js<br/>Express]
-    VAL[validate.js]
+    VAL[validate.js + gameConfig.js]
     RL[rateLimit.js]
     STORE[store.js]
     EXP --> RL --> VAL --> STORE
   end
-  PG[(Render Postgres<br/>scores tábla)]
+  PG[(Közös Kománovics Postgres<br/>komanovics_scores tábla)]
   MEM[(Memória-fallback)]
   API -- "GET/POST /api/scores" --> EXP
   HTML -. statikus fájlok .-> EXP
@@ -43,18 +43,19 @@ flowchart LR
 - **`server/app.js`** – `createApp({store, rateLimitPerMin})`:
   - `trust proxy = 1` (Render proxy mögött a valódi kliens-IP kell a rate limithez),
   - biztonsági fejlécek: CSP (`script-src 'self'`, inline script nincs), `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`,
-  - `GET /healthz` → `{ok, storage, time}`; 503 ha a DB nem válaszol,
+  - `GET /healthz` → `{ok, game, storage, table, time}`; 503 ha a DB nem válaszol,
   - `GET /api/scores` → `{storage, scores:[{name, score, level, created_at}]}` (top 10, `Cache-Control: no-store`),
   - `POST /api/scores` → rate limit → `express.json({limit:'2kb'})` → `validateScore` → `store.add` → `201 {id, rank, name, score, scores}`,
   - ismeretlen `/api/*` → 404 JSON; hibás JSON → 400; túl nagy → 413,
   - statikus fájlok `public/`-ból (`no-cache` a JS/CSS/HTML-re, 1 nap cache a képekre – nincs fájlnév-hash, ezért így marad friss a deploy után).
-- **`server/validate.js`** – `sanitizeName` (NFC, csak `\p{L}\p{N}` és ` ._-!?`, szóköz-összevonás, max 16), `validateScore` (név kötelező, nyers hossz ≤ 64; pontszám egész 0..1 000 000; `level` 1..999; `durationSec` 0..6 óra; hihetőség: `score ≤ 300 + durationSec × 80`).
+- **`server/gameConfig.js`** – játék-specifikus beállítások: név, alapértelmezett tábla (`komanovics_scores`), validálási határok. (A KOMÁNOVICS Darts-szal közös szerver-sablon része.)
+- **`server/validate.js`** – `sanitizeName` (NFC, csak `\p{L}\p{N}` és ` ._-!?`, szóköz-összevonás, max 16), `validateScore(body, limits)` (a határok a `gameConfig.js`-ből; név kötelező, nyers hossz ≤ 64; pontszám egész 0..1 000 000; `level` 1..999; `durationSec` 0..6 óra; hihetőség: `score ≤ 300 + durationSec × 80`).
 - **`server/rateLimit.js`** – IP-nkénti fix 60 mp-es ablak, alapértelmezés 5 POST/perc (`SCORE_RATE_LIMIT_PER_MIN`), 429 + `Retry-After`.
 - **`server/store.js`** – két implementáció ugyanazzal az interfésszel: `kind`, `init()`, `top(limit)`, `add(row) → {id, rank}`, `health()`, `close()`.
 
 ### Adatmodell (PostgreSQL)
 ```sql
-CREATE TABLE IF NOT EXISTS scores (
+CREATE TABLE IF NOT EXISTS komanovics_scores (   -- tábla: SCORES_TABLE env vagy alapértelmezés
   id           SERIAL PRIMARY KEY,
   name         VARCHAR(16) NOT NULL,
   score        INTEGER NOT NULL CHECK (score >= 0 AND score <= 1000000),
@@ -62,9 +63,11 @@ CREATE TABLE IF NOT EXISTS scores (
   duration_sec INTEGER,
   created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE INDEX IF NOT EXISTS scores_score_idx ON scores (score DESC, created_at ASC);
+CREATE INDEX IF NOT EXISTS komanovics_scores_score_idx ON komanovics_scores (score DESC, created_at ASC);
 ```
 Rendezés: pontszám csökkenő, holtversenynél a korábbi beküldés nyer. A séma induláskor jön létre (nincs külön migrációs eszköz – egyetlen tábla miatt szándékosan).
+
+**Közös adatbázis (2026-10-03 óta):** a Kománovics-játékok egy Postgres adatbázison osztoznak, **játékonként külön táblában** (KOMÁNOVICS: `komanovics_scores`, KOMÁNOVICS Darts: `darts_scores`). A tábla neve a `SCORES_TABLE` env-ből vagy a `server/gameConfig.js` alapértelmezéséből jön; mivel SQL-be interpolálódik, az `assertTableName` csak `^[a-z_][a-z0-9_]{0,62}$` nevet enged. Az index neve is táblanév-előtagos. Korábban a tábla neve `scores` volt – adatbázis sosem volt bekötve, így migráció nem kellett.
 
 ### SSL
 `sslConfigFor(url, DATABASE_SSL)`: `true`/`false` felülír; különben `*.render.com` host (külső URL) → SSL `rejectUnauthorized:false`; belső Render host (`dpg-…-a`) → nincs SSL.

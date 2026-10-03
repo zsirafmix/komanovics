@@ -4,14 +4,15 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validateScore } from './validate.js';
 import { createRateLimiter } from './rateLimit.js';
+import { GAME } from './gameConfig.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 
 /**
- * @param {{store: ReturnType<import('./store.js').createStore>, rateLimitPerMin?: number}} opts
+ * @param {{store: ReturnType<import('./store.js').createStore>, rateLimitPerMin?: number, limits?: object}} opts
  */
-export function createApp({ store, rateLimitPerMin = 5 }) {
+export function createApp({ store, rateLimitPerMin = 5, limits = GAME.limits }) {
   const app = express();
   // Render (és a legtöbb PaaS) reverse proxy mögött fut: az első proxy X-Forwarded-For-ját fogadjuk el,
   // különben minden kérés a proxy IP-jéről jönne és a rate limit mindenkit együtt korlátozna.
@@ -31,7 +32,7 @@ export function createApp({ store, rateLimitPerMin = 5 }) {
 
   app.get('/healthz', async (req, res) => {
     const dbOk = await store.health();
-    res.status(dbOk ? 200 : 503).json({ ok: dbOk, storage: store.kind, time: new Date().toISOString() });
+    res.status(dbOk ? 200 : 503).json({ ok: dbOk, game: GAME.name, storage: store.kind, table: store.table, time: new Date().toISOString() });
   });
 
   app.get('/api/scores', async (req, res) => {
@@ -50,7 +51,7 @@ export function createApp({ store, rateLimitPerMin = 5 }) {
     createRateLimiter({ limit: rateLimitPerMin }),
     express.json({ limit: '2kb' }),
     async (req, res) => {
-      const v = validateScore(req.body);
+      const v = validateScore(req.body, limits);
       if (!v.ok) return res.status(400).json({ error: v.error });
       try {
         const { id, rank } = await store.add(v.value);

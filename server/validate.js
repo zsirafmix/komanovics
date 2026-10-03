@@ -1,16 +1,21 @@
 // Pontszám-beküldés validálása és a név szanitizálása.
 // Szándékosan függőségmentes, hogy unit tesztelhető legyen (test/validate.test.js).
+// A határértékek játékonként eltérnek, ezért a validateScore egy `limits` objektumot kap
+// (a játék saját értékei: server/gameConfig.js).
 
 export const NAME_MAX = 16;
 export const NAME_MIN = 1;
-export const SCORE_MAX = 1_000_000;
-export const LEVEL_MAX = 999;
-export const DURATION_MAX_SEC = 6 * 60 * 60; // 6 óra
 
-// Elméleti maximum pont / másodperc (sör 10 * max 3x szorzó * sűrű spawn + távolságpont),
-// bőséges ráhagyással. Csak durva csalás-szűrő, nem valódi anti-cheat.
-export const MAX_POINTS_PER_SEC = 80;
-export const BASE_ALLOWANCE = 300;
+/** Alapértelmezett (laza) határok – a játékok felülírják. */
+export const DEFAULT_LIMITS = {
+  scoreMax: 1_000_000,
+  levelMax: 999,
+  durationMaxSec: 6 * 60 * 60, // 6 óra
+  // Hihetőségi korlát: score <= baseAllowance + durationSec * maxPointsPerSec.
+  // Csak durva csalás-szűrő, nem valódi anti-cheat.
+  maxPointsPerSec: 80,
+  baseAllowance: 300,
+};
 
 /**
  * Név tisztítása: Unicode betűk/számok, szóköz és néhány írásjel marad,
@@ -30,9 +35,11 @@ export function sanitizeName(raw) {
 
 /**
  * @param {any} body a POST /api/scores JSON body-ja
+ * @param {Partial<typeof DEFAULT_LIMITS>} [limitsIn]
  * @returns {{ok: true, value: {name: string, score: number, level: number, durationSec: number|null}} | {ok: false, error: string}}
  */
-export function validateScore(body) {
+export function validateScore(body, limitsIn = {}) {
+  const L = { ...DEFAULT_LIMITS, ...limitsIn };
   if (!body || typeof body !== 'object') return { ok: false, error: 'Hiányzó vagy hibás JSON törzs.' };
 
   if (typeof body.name !== 'string') return { ok: false, error: 'A név kötelező.' };
@@ -42,21 +49,23 @@ export function validateScore(body) {
 
   const score = body.score;
   if (typeof score !== 'number' || !Number.isInteger(score)) return { ok: false, error: 'A pontszámnak egész számnak kell lennie.' };
-  if (score < 0 || score > SCORE_MAX) return { ok: false, error: `A pontszám 0 és ${SCORE_MAX} között lehet.` };
+  if (score < 0 || score > L.scoreMax) return { ok: false, error: `A pontszám 0 és ${L.scoreMax} között lehet.` };
 
   let level = 1;
   if (body.level !== undefined) {
-    if (!Number.isInteger(body.level) || body.level < 1 || body.level > LEVEL_MAX) return { ok: false, error: 'Érvénytelen szint.' };
+    if (!Number.isInteger(body.level) || body.level < 1 || body.level > L.levelMax) return { ok: false, error: 'Érvénytelen szint.' };
     level = body.level;
   }
 
   let durationSec = null;
   if (body.durationSec !== undefined) {
     const d = body.durationSec;
-    if (typeof d !== 'number' || !Number.isFinite(d) || d < 0 || d > DURATION_MAX_SEC) return { ok: false, error: 'Érvénytelen játékidő.' };
+    if (typeof d !== 'number' || !Number.isFinite(d) || d < 0 || d > L.durationMaxSec) return { ok: false, error: 'Érvénytelen játékidő.' };
     durationSec = Math.round(d);
     // Hihetőségi ellenőrzés: ennyi idő alatt nem lehet ennyi pontot szerezni.
-    if (score > BASE_ALLOWANCE + durationSec * MAX_POINTS_PER_SEC) return { ok: false, error: 'A pontszám nem hihető ennyi játékidőhöz.' };
+    if (score > L.baseAllowance + durationSec * L.maxPointsPerSec) return { ok: false, error: 'A pontszám nem hihető ennyi játékidőhöz.' };
+  } else if (L.requireDuration) {
+    return { ok: false, error: 'Hiányzó játékidő.' };
   }
 
   return { ok: true, value: { name, score, level, durationSec } };

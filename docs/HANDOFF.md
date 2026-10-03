@@ -1,6 +1,49 @@
 # Handoff – KOMÁNOVICS
 
 ## Date
+2026-10-03 (Europe/Budapest), kb. 10:10–10:20 – 1.1.0 (játék-specifikus tábla)
+
+## Goal of this session
+A toplista táblájának átnevezése játék-specifikusra (`komanovics_scores`), hogy a Kománovics-játékok
+(KOMÁNOVICS + az új KOMÁNOVICS Darts → `darts_scores`) később egyetlen Postgres adatbázison osztozhassanak.
+
+## What was changed
+- `server/store.js`: konfigurálható, validált táblanév (`SCORES_TABLE` vagy a játék alapértelmezése), táblanév-előtagos index.
+- Új `server/gameConfig.js` (név `KOMÁNOVICS`, tábla `komanovics_scores`, a régi validálási határok változatlanul).
+- `server/validate.js`: `validateScore(body, limits)`; `server/app.js`: `/healthz` → `game`, `table`; `server/index.js`: tábla a logban.
+- Tesztek, `.env.example`, `render.yaml`, README, ARCHITECTURE (adatmodell + közös DB), SETUP, KNOWN_ISSUES, ROADMAP, AGENTS, CHANGELOG.
+
+## Files modified
+`server/{app,index,store,validate}.js`, `server/gameConfig.js` (új), `test/{validate,api}.test.js`, `.env.example`, `render.yaml`,
+`README.md`, `AGENTS.md`, `CHANGELOG.md`, `docs/{ARCHITECTURE,SETUP,KNOWN_ISSUES,ROADMAP,HANDOFF}.md`.
+
+## What currently works
+Minden, ami 1.0.0-ban; a frontend nem változott. A `/healthz` most `{"ok":true,"game":"KOMÁNOVICS","storage":"memory","table":"komanovics_scores",…}`.
+
+## What does not work
+Továbbra sincs adatbázis (KI-1) – a memóriabeli toplista újraindításkor törlődik.
+
+## Tests performed / results
+- `npm test`: 9/9 zöld (új teszt: táblanév-alapértelmezés, `SCORES_TABLE` felülírás, veszélyes nevek elutasítása; healthz `table`).
+- Élő: deploy után `/healthz` ellenőrizve (lásd lent).
+
+## Important discoveries
+Migráció nem kellett (DB sosem volt). A régi `scores` név túl általános lett volna egy közös adatbázisban.
+
+## Failed attempts
+Nincs.
+
+## Known risks
+Ha valaki mégis egy régi `scores` táblás adatbázist kötne be, az adatok nem látszanának – akkor `SCORES_TABLE=scores` vagy `ALTER TABLE scores RENAME TO komanovics_scores` kell.
+
+## Next exact step
+Közös Postgres bekötése (ROADMAP R1): ugyanaz a `DATABASE_URL` a `komanovics` és a `komanovics-darts` szolgáltatásra, majd `trigger_deploy` és `/healthz` ellenőrzés.
+
+---
+
+# Előző munkamenet (1.0.0)
+
+## Date
 2026-10-03 (Europe/Budapest), kb. 09:00–09:45
 
 ## Goal of this session

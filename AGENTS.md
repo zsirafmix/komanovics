@@ -14,31 +14,31 @@ Minden játékbeli szöveg magyar. Csak ingyenes Render erőforrások. Build-lé
 
 ## CURRENT STATUS
 - ✅ Teljes játék kész és élő: https://komanovics.onrender.com (Render `srv-db0asre0tbcc73f1udf0`, free, frankfurt, branch `main`; pushra NEM deployol automatikusan – KI-12).
-- ✅ API (`/healthz`, `GET/POST /api/scores`) működik, validálással és rate limittel.
+- ✅ API (`/healthz`, `GET/POST /api/scores`) működik, validálással és rate limittel. A `/healthz` a játék nevét és a táblát is mutatja (`table: komanovics_scores`).
 - ⚠️ Toplista **memóriában** (nincs `DATABASE_URL`): a free Postgres nem jött létre (workspace-limit). Újraindításkor törlődik.
 - ⚠️ Valódi telefonon nem tesztelt (csak headless Chrome mobil-emulációban).
 
 ## LAST COMPLETED TASK
-2026-10-03: első kiadás (1.0.0) – játék, szerver, tesztek, docs, GitHub repó, Render deploy, élő ellenőrzés (curl + headless smoke).
+2026-10-03: 1.1.0 – játék-specifikus `komanovics_scores` tábla (a régi `scores` helyett) a közös Kománovics-adatbázishoz; `SCORES_TABLE` env, `server/gameConfig.js`, táblanév-validálás, tesztek. (Előtte: 1.0.0 első kiadás.)
 
 ## CURRENT TASK
 Nincs folyamatban lévő munka. Várakozás a tulajdonos döntésére a tartós DB-ről.
 
 ## NEXT TASK
-ROADMAP R1 (Postgres bekötése, lásd SETUP 6. „Postgres bekötése később”), majd R2 (iOS/Android kézi teszt), R3 (iOS hang-feloldás).
+ROADMAP R1 (a KÖZÖS Kománovics Postgres bekötése – ugyanaz a `DATABASE_URL`, mint a `komanovics-darts`-nál, lásd SETUP 6.), majd R2 (iOS/Android kézi teszt), R3 (iOS hang-feloldás).
 
 ## IMPORTANT FILES
 - `public/js/game.js` – a játék magja (állapotgép, részeg-fizika, spawn, ütközés, animációk). Legtöbb gameplay-hangolás itt + `config.js`.
 - `public/js/draw.js` – minden grafika. `drawPlayer` = Eduárd.
 - `public/js/audio.js` – hangok és zene.
 - `public/js/main.js` – UI, HUD, képernyők, toplista.
-- `server/app.js`, `server/store.js`, `server/validate.js` – backend.
+- `server/app.js`, `server/store.js`, `server/validate.js`, `server/gameConfig.js` – backend (a `gameConfig.js`-ben a játék neve, táblája, validálási határai).
 - `tools/smoke.mjs` – a legjobb regressziós teszt (futtasd minden frontend-változás után, és nézd meg a képeket).
 - `render.yaml`, `.env.example`, `docs/SETUP.md` (Render ID-k).
 
 ## ARCHITECTURE SUMMARY
 Egy Express folyamat: statikus `public/` + JSON API. Frontend: ES modulok, canvas 400 logikai egység széles, magasság a képarányból;
-rAF ciklus → `Game.update(dt)` → `Game.draw(ctx)`; DOM HUD. Tárolás: `pg` Pool (`scores` tábla, induláskor létrehozva) vagy memória.
+rAF ciklus → `Game.update(dt)` → `Game.draw(ctx)`; DOM HUD. Tárolás: `pg` Pool (`komanovics_scores` tábla a közös Kománovics-adatbázisban, induláskor létrehozva; `SCORES_TABLE`-lel felülírható) vagy memória.
 Részletek és Mermaid diagramok: `docs/ARCHITECTURE.md`.
 
 ## HOW TO BUILD

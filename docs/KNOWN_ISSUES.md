@@ -24,7 +24,8 @@
   1. Megvárni, míg az `allyoutuber` ingyenes DB lejár / a tulajdonos törli, aztán létrehozni a `komanovics-db`-t (lásd SETUP 6.).
   2. Fizetős Render Postgres (`basic_256mb`) – csak kifejezett engedéllyel.
   3. Külső ingyenes Postgres (pl. Neon, Supabase): a `DATABASE_URL`-t beállítani; külső hostnál `DATABASE_SSL=true` kellhet.
-  4. Az `allyoutuber` DB-ben egy külön `scores` tábla – NEM ajánlott (más projekt, másik régió, a tulajdonos engedélye kell).
+  4. Az `allyoutuber` DB-ben egy külön tábla – NEM ajánlott (más projekt, másik régió, a tulajdonos engedélye kell).
+  5. **Tervezett:** egy közös Kománovics-adatbázis az összes játéknak; ez a játék a `komanovics_scores` táblát használja (a KOMÁNOVICS Darts a `darts_scores`-t), így ütközés nélkül osztozhatnak.
 
 ## KI-2 – Elalvó free web service
 - Workaround: türelem az első betöltésnél; a kezdőképernyő „Betöltés…” üzenetet mutat a toplistán.

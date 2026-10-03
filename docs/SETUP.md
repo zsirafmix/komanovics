@@ -29,14 +29,15 @@ DATABASE_URL nélkül a toplista **memóriában** van (a log: `[store] using mem
 # pl. Dockerrel:
 docker run --rm -d --name komanovics-pg -e POSTGRES_PASSWORD=pw -p 5432:5432 postgres:18
 export DATABASE_URL=postgresql://postgres:pw@localhost:5432/postgres
-npm start                 # a "scores" tábla automatikusan létrejön
+npm start                 # a "komanovics_scores" tábla automatikusan létrejön
 ```
 
 ## 3. Környezeti változók (lásd `.env.example`)
 | Változó | Kötelező | Leírás |
 |---|---|---|
 | `PORT` | nem (alap 3000) | Renderen a platform adja (10000) |
-| `DATABASE_URL` | nem | Postgres kapcsolati string. Hiányában memória-fallback. **Soha ne commitold.** |
+| `DATABASE_URL` | nem | Postgres kapcsolati string. Hiányában memória-fallback. **Soha ne commitold.** A Kománovics-játékok egy közös adatbázist használhatnak. |
+| `SCORES_TABLE` | nem | Tábla a (közös) adatbázisban. Alapértelmezés: `komanovics_scores` (csak `a-z0-9_`). |
 | `DATABASE_SSL` | nem | `true` / `false` / üres = automatikus (`*.render.com` host → SSL) |
 | `SCORE_RATE_LIMIT_PER_MIN` | nem (alap 5) | IP-nkénti beküldési limit percenként |
 | `NODE_VERSION` | csak Renderen | `20` |
@@ -84,7 +85,8 @@ Build: `npm install`, start: `npm start`. Env: `NODE_VERSION=20`, `SCORE_RATE_LI
 1. Render MCP `create_postgres` (`name: komanovics-db`, `plan: free`, `region: frankfurt`) vagy Dashboard → New → Postgres.
 2. Várd meg, míg `available`, majd a Dashboardon (Connections → **Internal Database URL**) másold ki a belső URL-t.
 3. Render MCP `update_environment_variables` (`serviceId: srv-db0asre0tbcc73f1udf0`, `DATABASE_URL=<internal url>`) – ez újradeployt indít.
-4. Ellenőrzés: `curl https://komanovics.onrender.com/healthz` → `"storage":"postgres"`.
+4. Ellenőrzés: `curl https://komanovics.onrender.com/healthz` → `"storage":"postgres"`, `"table":"komanovics_scores"`.
+5. Ugyanez a `DATABASE_URL` mehet a KOMÁNOVICS Darts szolgáltatásra is (`komanovics-darts`, saját tábla: `darts_scores`).
 A DB és a web service ugyanabban a régióban legyen (frankfurt), különben a belső URL nem működik.
 
 ### Blueprint (alternatíva)

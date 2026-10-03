@@ -1,12 +1,13 @@
 // Belépési pont: tároló inicializálása, majd HTTP szerver indítása a $PORT-on (Render: 0.0.0.0:$PORT).
 import { createApp } from './app.js';
 import { createStore, createMemoryStore } from './store.js';
+import { GAME } from './gameConfig.js';
 
 const PORT = Number(process.env.PORT) || 3000;
 const RATE = Number(process.env.SCORE_RATE_LIMIT_PER_MIN) || 5;
 
 async function main() {
-  let store = createStore();
+  let store = createStore(process.env, { defaultTable: GAME.defaultTable });
   // A DB induláskor lehet, hogy épp ébred / újraindul: 5 próbálkozás 3 mp szünettel.
   // Ha így sem megy, ne haljon meg a szolgáltatás: memóriára esünk vissza, és ezt hangosan logoljuk
   // (a /healthz "storage" mezője is mutatja). Ilyenkor a szolgáltatás újraindítása kell a DB-hez.
@@ -19,16 +20,16 @@ async function main() {
       if (attempt >= 5) {
         console.error('[store] falling back to in-memory store');
         await store.close().catch(() => {});
-        store = createMemoryStore();
+        store = createMemoryStore({ table: store.table });
         break;
       }
       await new Promise((r) => setTimeout(r, 3000));
     }
   }
-  console.log(`[store] using ${store.kind} storage${store.kind === 'memory' ? ' (scores are lost on restart!)' : ''}`);
+  console.log(`[store] using ${store.kind} storage (table ${store.table})${store.kind === 'memory' ? ' (scores are lost on restart!)' : ''}`);
 
   const app = createApp({ store, rateLimitPerMin: RATE });
-  const server = app.listen(PORT, '0.0.0.0', () => console.log(`[http] KOMÁNOVICS listening on :${PORT}`));
+  const server = app.listen(PORT, '0.0.0.0', () => console.log(`[http] ${GAME.name} listening on :${PORT}`));
 
   const shutdown = (sig) => {
     console.log(`[http] ${sig} received, shutting down`);

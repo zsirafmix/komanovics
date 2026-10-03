@@ -8,7 +8,7 @@ let server;
 let base;
 
 before(async () => {
-  const app = createApp({ store: createMemoryStore(), rateLimitPerMin: 3 });
+  const app = createApp({ store: createMemoryStore({ table: 'komanovics_scores' }), rateLimitPerMin: 3 });
   await new Promise((r) => (server = app.listen(0, '127.0.0.1', r)));
   base = `http://127.0.0.1:${server.address().port}`;
 });
@@ -23,6 +23,8 @@ test('GET /healthz', async () => {
   const j = await r.json();
   assert.equal(j.ok, true);
   assert.equal(j.storage, 'memory');
+  assert.equal(j.game, 'KOMÁNOVICS');
+  assert.equal(j.table, 'komanovics_scores');
 });
 
 test('GET / kiszolgálja a játékot', async () => {

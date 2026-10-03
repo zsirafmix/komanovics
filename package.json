@@ -1,6 +1,6 @@
 {
   "name": "komanovics",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "KOMÁNOVICS – Eduárd biciklis, böngészős biciklis vertikális scroller játék online ranglistával (Node.js + Express + PostgreSQL).",
   "private": true,
   "type": "module",

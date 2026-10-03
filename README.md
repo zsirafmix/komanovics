@@ -41,6 +41,7 @@ Következő agentnek: [AGENTS.md](AGENTS.md) → „START HERE FOR NEXT AGENT”
 | `server/index.js` | Belépési pont: tároló inicializálása (5 próbálkozás, majd memória-fallback), HTTP indítás `0.0.0.0:$PORT`-on, SIGTERM kezelés. |
 | `server/app.js` | Express app: biztonsági fejlécek (CSP), `/healthz`, `GET/POST /api/scores`, statikus kiszolgálás a `public/`-ból. Tesztelhetőség miatt külön a listen-től. |
 | `server/store.js` | Tároló: PostgreSQL (`pg`, tábla automatikus létrehozása) vagy memóriabeli fallback; azonos interfész. SSL-döntés (`sslConfigFor`). |
+| `server/gameConfig.js` | Játék-specifikus beállítások: név, tábla (`komanovics_scores` a közös Kománovics-adatbázisban, `SCORES_TABLE`-lel felülírható), validálási határok. |
 | `server/validate.js` | Pontszám-beküldés validálása, név szanitizálása (Unicode betű/szám + ` ._-!?`, max 16 karakter), hihetőségi ellenőrzés. |
 | `server/rateLimit.js` | Memóriabeli, IP-nkénti fix ablakos rate limiter (alap: 5 beküldés / perc). |
 | `public/index.html` | Egyetlen oldal: canvas, HUD, kezdő/szünet/game over képernyők (magyar szövegek). |

@@ -2,6 +2,17 @@
 
 Formátum: dátum (Europe/Budapest) – komponens – leírás – ok – érintett fájlok – teszt – ismert probléma.
 
+## 2026-10-03 – 1.1.0 – játék-specifikus tábla a közös adatbázishoz
+### Módosítva
+- **Szerver/tárolás:** a toplista táblája `scores` helyett **`komanovics_scores`** (index: `komanovics_scores_score_idx`),
+  `SCORES_TABLE` env-vel felülírható. Ok: a Kománovics-játékok (KOMÁNOVICS, KOMÁNOVICS Darts → `darts_scores`) később
+  egy közös Postgres adatbázison osztoznak. Migráció nem kellett: adatbázis sosem volt bekötve.
+- Új `server/gameConfig.js` (név, alapértelmezett tábla, validálási határok); `validateScore(body, limits)`;
+  `assertTableName` (csak `^[a-z_][a-z0-9_]{0,62}$`, mert a név SQL-be interpolálódik); `/healthz` → `game`, `table` mező.
+  A szerver-sablon a KOMÁNOVICS Darts repóval közös.
+- Fájlok: `server/{app,index,store,validate,gameConfig}.js`, `test/*.js`, `.env.example`, `render.yaml`, docs.
+- Teszt: `npm test` 9/9; élő `/healthz` → `table: komanovics_scores`. Ismert probléma: továbbra sincs DB (KI-1).
+
 ## 2026-10-03 – 1.0.0 – első kiadás
 ### Hozzáadva
 - **Játék (frontend):** függőleges görgetésű tanyasi földút, Eduárd biciklin (kivágott saját fej + canvas test, dőlés, pedálozás, sörösláda a csomagtartón).
